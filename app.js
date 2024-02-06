@@ -100,11 +100,10 @@ app.get('/', (req, res) => {
       return true;
     }),
     check('email','Email tidak valid!').isEmail(),
-    check('noHp','No Hp tidak valid!').isMobilePhone('id-ID'),
+    check('nohp','No Hp tidak valid!').isMobilePhone('id-ID'),
   ], (req, res) => {
     const errors = validationResult(req);
     if(!errors.isEmpty()){
-      // return res.status(400).json({ errors:errors.array() });
       res.render('add-contact', {
         title :'Form Add Data Contact',
         layout :'layouts/main-layout',
@@ -127,6 +126,55 @@ app.get('/', (req, res) => {
     });
   });
 
+  //halaman form ubah data contact
+  app.get('/contact/edit/:nama' , async (req , res) => {
+    const contact = await Contact.findOne({ nama: req.params.nama });
+    res.render('edit-contact', {
+      title : 'Form Ubah Data Contact',
+      layout : 'layouts/main-layout',
+      contact,
+    });
+  });
+
+  //prosess ubah data contact
+  app.put('/contact', [
+    body('nama').custom( async (value, { req }) => {
+      const duplikat = await Contact.findOne({ nama : value });
+      if(value !== req.body.oldNama && duplikat){
+        throw new Error('Nama contact sudah digunakan!');
+      }
+      return true;
+    }),
+    check('email','Email tidak valid!').isEmail(),
+    check('nohp','No Hp tidak valid!').isMobilePhone('id-ID'),
+  ], (req, res) => {
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+      // return res.status(400).json({ errors:errors.array() });
+      res.render('edit-contact', {
+        title :'Form Edit Data Contact',
+        layout :'layouts/main-layout',
+        errors: errors.array(), 
+        contact: req.body,
+      });
+    } else {
+      Contact.updateOne(
+        { _id: req.body._id},
+        {
+          $set: {
+            nama: req.body.nama,
+            email: req.body.email,
+            nohp: req.body.nohp,
+          }
+        }
+        ).then((result) => {
+          //kirimkan flash message
+          req.flash('msg', 'Data contact berhasil diubah!')
+          res.redirect('/contact');
+      });
+    }
+  });
+
   //halaman detail contact
   app.get('/contact/:nama', async (req, res) => {
     const contact = await Contact.findOne({ nama: req.params.nama });
@@ -137,7 +185,6 @@ app.get('/', (req, res) => {
       contact,
     });
   });
-
 
 app.listen(port, () => {
     console.log(`Mongodb Contact App | listening at http://localhost:${port}`);

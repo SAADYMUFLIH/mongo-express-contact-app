@@ -15,8 +15,13 @@
                       <p class="card-text"><%= contact.email %></p>
                       <a href="/contact/edit/<%= contact.nama %>" 
                         class="btn btn-outline-info">Edit</a>
-                      <a href="/contact/delete/<%= contact.nama %>" 
-                        class="btn btn-outline-danger" onclick="return confirm('yakin?')">Hapus</a>
+                      <!-- <a href="/contact/delete/ 
+                        class="btn btn-outline-danger" onclick="return confirm('yakin?')">Hapus</a> -->
+                        <form action="/contact?_method=DELETE" method="POST" class="d-inline">
+                            <input type="hidden" name="nama" value="<%= contact.nama %>">
+                            <button type="submit" class="btn btn-outline-danger" 
+                            onclick="return confirm('yakin?')">Hapus</button>
+                        </form>
                       <a href="/contact" class="btn btn-outline-secondary">Kembali</a>
                     </div>
                     <% } %>
